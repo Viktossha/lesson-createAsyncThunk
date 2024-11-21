@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { ResultCode } from "common/enums"
-import { handleServerAppError, handleServerNetworkError } from "common/utils"
+import { createAppAsyncThunk, handleServerAppError, handleServerNetworkError } from "common/utils"
 import { Dispatch } from "redux"
 import { setAppStatus } from "../../../app/appSlice"
 import { RootState } from "../../../app/store"
@@ -51,6 +51,9 @@ export const tasksSlice = createSlice({
       .addCase(removeTodolist, (state, action) => {
         delete state[action.payload.id]
       })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state[action.payload.todolistId] = action.payload.tasks
+      })
   },
   selectors: {
     selectTasks: (state) => state,
@@ -58,18 +61,21 @@ export const tasksSlice = createSlice({
 })
 
 // Thunks
-export const fetchTasksTC = (todolistId: string) => (dispatch: Dispatch) => {
-  dispatch(setAppStatus({ status: "loading" }))
-  tasksApi
-    .getTasks(todolistId)
-    .then((res) => {
+export const fetchTasks = createAppAsyncThunk<{ todolistId: string; tasks: DomainTask[] }, string>(
+  `${tasksSlice.name}/fetchTasks`,
+  async (todolistId: string, thunkAPI) => {
+    const dispatch = thunkAPI.dispatch
+    try {
+      dispatch(setAppStatus({ status: "loading" }))
+      const res = await tasksApi.getTasks(todolistId)
       dispatch(setAppStatus({ status: "succeeded" }))
-      dispatch(setTasks({ todolistId, tasks: res.data.items }))
-    })
-    .catch((error) => {
+      return { todolistId, tasks: res.data.items }
+    } catch (error) {
       handleServerNetworkError(error, dispatch)
-    })
-}
+      return thunkAPI.rejectWithValue(null)
+    }
+  },
+)
 
 export const removeTaskTC = (arg: { taskId: string; todolistId: string }) => (dispatch: Dispatch) => {
   dispatch(setAppStatus({ status: "loading" }))

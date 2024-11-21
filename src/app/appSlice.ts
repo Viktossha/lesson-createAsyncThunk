@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { RootState } from "./store"
 
 export type ThemeMode = "dark" | "light"
 export type RequestStatus = "idle" | "loading" | "succeeded" | "failed"
@@ -7,7 +6,7 @@ export type RequestStatus = "idle" | "loading" | "succeeded" | "failed"
 export const appSlice = createSlice({
   name: "app",
   initialState: {
-    themeMode: "light" as ThemeMode,
+    themeMode: "dark" as ThemeMode,
     status: "idle" as RequestStatus,
     error: null as string | null,
   },
