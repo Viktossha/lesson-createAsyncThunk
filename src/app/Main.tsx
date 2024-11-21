@@ -5,7 +5,7 @@ import { AddItemForm } from "common/components"
 import { useAppDispatch, useAppSelector } from "common/hooks"
 import { Navigate } from "react-router-dom"
 import { selectIsLoggedIn } from "../features/auth/model/authSlice"
-import { addTodolistTC } from "../features/todolists/model/todolistsSlice"
+import { addTodolist } from "../features/todolists/model/todolistsSlice"
 import { Todolists } from "../features/todolists/ui/Todolists/Todolists"
 
 export const Main = () => {
@@ -13,8 +13,8 @@ export const Main = () => {
 
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
 
-  const addTodolist = (title: string) => {
-    dispatch(addTodolistTC(title))
+  const addTodolistCb = (title: string) => {
+    dispatch(addTodolist(title))
   }
 
   if (!isLoggedIn) {
@@ -24,7 +24,7 @@ export const Main = () => {
   return (
     <Container fixed>
       <Grid container sx={{ mb: "30px" }}>
-        <AddItemForm addItem={addTodolist} />
+        <AddItemForm addItem={addTodolistCb} />
       </Grid>
       <Grid container spacing={4}>
         <Todolists />
