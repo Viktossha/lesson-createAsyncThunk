@@ -1,7 +1,6 @@
-import { asyncThunkCreator, buildCreateSlice, createSlice } from "@reduxjs/toolkit"
+import { asyncThunkCreator, buildCreateSlice } from "@reduxjs/toolkit"
 import { ResultCode } from "common/enums"
 import { handleServerAppError, handleServerNetworkError } from "common/utils"
-import { Dispatch } from "redux"
 import { RequestStatus, setAppStatus } from "../../../app/appSlice"
 import { todolistsApi } from "../api/todolistsApi"
 import { Todolist } from "../api/todolistsApi.types"
@@ -82,17 +81,17 @@ export const todolistsSlice = createSliceWithThunks({
           }
         }
       }),
-      updateTodolistTitle: createAThunk(async (arg: { id: string; title: string }, {dispatch, rejectWithValue}) => {
+      updateTodolistTitle: createAThunk(async (arg: { id: string; title: string }, { dispatch, rejectWithValue }) => {
         try {
           dispatch(setAppStatus({ status: "loading" }))
-          const res =  await todolistsApi.updateTodolist(arg)
-              if (res.data.resultCode === ResultCode.Success) {
-                dispatch(setAppStatus({ status: "succeeded" }))
-                return arg
-              } else {
-                handleServerAppError(res.data, dispatch)
-                return rejectWithValue(null)
-              }
+          const res = await todolistsApi.updateTodolist(arg)
+          if (res.data.resultCode === ResultCode.Success) {
+            dispatch(setAppStatus({ status: "succeeded" }))
+            return arg
+          } else {
+            handleServerAppError(res.data, dispatch)
+            return rejectWithValue(null)
+          }
         } catch (error) {
           handleServerNetworkError(error, dispatch)
           return rejectWithValue(null)

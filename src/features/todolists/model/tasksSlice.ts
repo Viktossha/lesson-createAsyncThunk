@@ -1,7 +1,6 @@
 import { asyncThunkCreator, buildCreateSlice } from "@reduxjs/toolkit"
 import { ResultCode } from "common/enums"
 import { handleServerAppError, handleServerNetworkError } from "common/utils"
-import { Dispatch } from "redux"
 import { setAppError, setAppStatus } from "../../../app/appSlice"
 import { RootState } from "../../../app/store"
 import { tasksApi } from "../api/tasksApi"
@@ -156,41 +155,6 @@ export const tasksSlice = createSliceWithThunks({
     selectTasks: (state) => state
   }
 })
-
-// Thunks
-// export const removeTaskTC = (arg: { taskId: string; todolistId: string }) => (dispatch: Dispatch) => {
-//   dispatch(setAppStatus({ status: "loading" }))
-//   tasksApi
-//     .deleteTask(arg)
-//     .then((res) => {
-//       if (res.data.resultCode === ResultCode.Success) {
-//         dispatch(setAppStatus({ status: "succeeded" }))
-//         dispatch(removeTask(arg))
-//       } else {
-//         handleServerAppError(res.data, dispatch)
-//       }
-//     })
-//     .catch((error) => {
-//       handleServerNetworkError(error, dispatch)
-//     })
-// }
-
-// export const addTaskTC = (arg: { title: string; todolistId: string }) => (dispatch: Dispatch) => {
-//   dispatch(setAppStatus({ status: "loading" }))
-//   tasksApi
-//     .createTask(arg)
-//     .then((res) => {
-//       if (res.data.resultCode === ResultCode.Success) {
-//         dispatch(setAppStatus({ status: "succeeded" }))
-//         dispatch(addTask({ task: res.data.data.item }))
-//       } else {
-//         handleServerAppError(res.data, dispatch)
-//       }
-//     })
-//     .catch((error) => {
-//       handleServerNetworkError(error, dispatch)
-//     })
-// }
 
 export const { removeTask, addTask, clearTasks, updateTask, fetchTasks } = tasksSlice.actions
 export const { selectTasks } = tasksSlice.selectors
