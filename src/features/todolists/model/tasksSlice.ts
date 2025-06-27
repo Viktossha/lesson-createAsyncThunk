@@ -35,13 +35,38 @@ export const tasksSlice = createSliceWithThunks({
         {
           fulfilled: (state, action) => {
             state[action.payload.todolistId] = action.payload.tasks
-          },
-        },
+          }
+        }
       ),
+      removeTask: createAThunk(async (arg: { taskId: string; todolistId: string }, { dispatch, rejectWithValue }) => {
+          try {
+            dispatch(setAppStatus({ status: "loading" }))
+            const res = await tasksApi.deleteTask(arg)
+            if (res.data.resultCode === ResultCode.Success) {
+              dispatch(setAppStatus({ status: "succeeded" }))
+              return arg
+            } else {
+              handleServerAppError(res.data, dispatch)
+              return rejectWithValue(null)
+            }
+          } catch (error) {
+            handleServerNetworkError(error, dispatch)
+            return rejectWithValue(null)
+          }
+        },
+        {
+          fulfilled: (state, action) => {
+            const tasks = state[action.payload.todolistId]
+            const index = tasks.findIndex((t) => t.id === action.payload.taskId)
+            if (index !== -1) {
+              tasks.splice(index, 1)
+            }
+          }
+        }),
       updateTask: createAThunk(
         async (
           arg: { taskId: string; todolistId: string; domainModel: UpdateTaskDomainModel },
-          { dispatch, rejectWithValue, getState },
+          { dispatch, rejectWithValue, getState }
         ) => {
           try {
             const { taskId, todolistId, domainModel } = arg
@@ -62,7 +87,7 @@ export const tasksSlice = createSliceWithThunks({
               description: task.description,
               priority: task.priority,
               startDate: task.startDate,
-              ...domainModel,
+              ...domainModel
             }
 
             dispatch(setAppStatus({ status: "loading" }))
@@ -88,23 +113,16 @@ export const tasksSlice = createSliceWithThunks({
             if (index !== -1) {
               tasks[index] = { ...tasks[index], ...action.payload.domainModel }
             }
-          },
-        },
-      ),
-      removeTask: create.reducer<{ taskId: string; todolistId: string }>((state, action) => {
-        const tasks = state[action.payload.todolistId]
-        const index = tasks.findIndex((t) => t.id === action.payload.taskId)
-        if (index !== -1) {
-          tasks.splice(index, 1)
+          }
         }
-      }),
+      ),
       addTask: create.reducer<{ task: DomainTask }>((state, action) => {
         const tasks = state[action.payload.task.todoListId]
         tasks.unshift(action.payload.task)
       }),
       clearTasks: create.reducer(() => {
         return {}
-      }),
+      })
     }
   },
   extraReducers: (builder) => {
@@ -117,27 +135,27 @@ export const tasksSlice = createSliceWithThunks({
       })
   },
   selectors: {
-    selectTasks: (state) => state,
-  },
+    selectTasks: (state) => state
+  }
 })
 
 // Thunks
-export const removeTaskTC = (arg: { taskId: string; todolistId: string }) => (dispatch: Dispatch) => {
-  dispatch(setAppStatus({ status: "loading" }))
-  tasksApi
-    .deleteTask(arg)
-    .then((res) => {
-      if (res.data.resultCode === ResultCode.Success) {
-        dispatch(setAppStatus({ status: "succeeded" }))
-        dispatch(removeTask(arg))
-      } else {
-        handleServerAppError(res.data, dispatch)
-      }
-    })
-    .catch((error) => {
-      handleServerNetworkError(error, dispatch)
-    })
-}
+// export const removeTaskTC = (arg: { taskId: string; todolistId: string }) => (dispatch: Dispatch) => {
+//   dispatch(setAppStatus({ status: "loading" }))
+//   tasksApi
+//     .deleteTask(arg)
+//     .then((res) => {
+//       if (res.data.resultCode === ResultCode.Success) {
+//         dispatch(setAppStatus({ status: "succeeded" }))
+//         dispatch(removeTask(arg))
+//       } else {
+//         handleServerAppError(res.data, dispatch)
+//       }
+//     })
+//     .catch((error) => {
+//       handleServerNetworkError(error, dispatch)
+//     })
+// }
 
 export const addTaskTC = (arg: { title: string; todolistId: string }) => (dispatch: Dispatch) => {
   dispatch(setAppStatus({ status: "loading" }))

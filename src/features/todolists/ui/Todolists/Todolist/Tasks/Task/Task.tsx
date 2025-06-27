@@ -2,7 +2,7 @@ import { EditableSpan } from "common/components"
 import { TaskStatus } from "common/enums"
 import { useAppDispatch } from "common/hooks"
 import { DomainTask } from "../../../../../api/tasksApi.types"
-import { removeTaskTC, updateTask } from "../../../../../model/tasksSlice"
+import { removeTask, updateTask } from "../../../../../model/tasksSlice"
 import { DomainTodolist } from "../../../../../model/todolistsSlice"
 import { getListItemSx } from "./Task.styles"
 import { ChangeEvent } from "react"
@@ -20,7 +20,7 @@ export const Task = ({ task, todolist }: Props) => {
   const dispatch = useAppDispatch()
 
   const removeTaskHandler = () => {
-    dispatch(removeTaskTC({ taskId: task.id, todolistId: todolist.id }))
+    dispatch(removeTask({ taskId: task.id, todolistId: todolist.id }))
   }
 
   const changeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
