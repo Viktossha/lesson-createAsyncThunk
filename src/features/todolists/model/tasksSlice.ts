@@ -116,10 +116,28 @@ export const tasksSlice = createSliceWithThunks({
           }
         }
       ),
-      addTask: create.reducer<{ task: DomainTask }>((state, action) => {
-        const tasks = state[action.payload.task.todoListId]
-        tasks.unshift(action.payload.task)
-      }),
+      addTask: createAThunk(async (arg: { title: string; todolistId: string }, { dispatch, rejectWithValue }) => {
+          try {
+            dispatch(setAppStatus({ status: "loading" }))
+            const res = await tasksApi.createTask(arg)
+            if (res.data.resultCode === ResultCode.Success) {
+              dispatch(setAppStatus({ status: "succeeded" }))
+              return { task: res.data.data.item }
+            } else {
+              handleServerAppError(res.data, dispatch)
+              return rejectWithValue(null)
+            }
+          } catch (error) {
+            handleServerNetworkError(error, dispatch)
+            return rejectWithValue(null)
+          }
+        },
+        {
+          fulfilled: (state, action) => {
+            const tasks = state[action.payload.task.todoListId]
+            tasks.unshift(action.payload.task)
+          }
+        }),
       clearTasks: create.reducer(() => {
         return {}
       })
@@ -157,22 +175,22 @@ export const tasksSlice = createSliceWithThunks({
 //     })
 // }
 
-export const addTaskTC = (arg: { title: string; todolistId: string }) => (dispatch: Dispatch) => {
-  dispatch(setAppStatus({ status: "loading" }))
-  tasksApi
-    .createTask(arg)
-    .then((res) => {
-      if (res.data.resultCode === ResultCode.Success) {
-        dispatch(setAppStatus({ status: "succeeded" }))
-        dispatch(addTask({ task: res.data.data.item }))
-      } else {
-        handleServerAppError(res.data, dispatch)
-      }
-    })
-    .catch((error) => {
-      handleServerNetworkError(error, dispatch)
-    })
-}
+// export const addTaskTC = (arg: { title: string; todolistId: string }) => (dispatch: Dispatch) => {
+//   dispatch(setAppStatus({ status: "loading" }))
+//   tasksApi
+//     .createTask(arg)
+//     .then((res) => {
+//       if (res.data.resultCode === ResultCode.Success) {
+//         dispatch(setAppStatus({ status: "succeeded" }))
+//         dispatch(addTask({ task: res.data.data.item }))
+//       } else {
+//         handleServerAppError(res.data, dispatch)
+//       }
+//     })
+//     .catch((error) => {
+//       handleServerNetworkError(error, dispatch)
+//     })
+// }
 
 export const { removeTask, addTask, clearTasks, updateTask, fetchTasks } = tasksSlice.actions
 export const { selectTasks } = tasksSlice.selectors
