@@ -41,9 +41,24 @@ export const todolistsSlice = createSliceWithThunks({
         {
           fulfilled: (state, action) => {
             state.unshift({ ...action.payload.todolist, filter: "all", entityStatus: "idle" })
-          },
-        },
+          }
+        }
       ),
+      fetchTodolists: createAThunk(async (_, { dispatch, rejectWithValue }) => {
+        try {
+          dispatch(setAppStatus({ status: "loading" }))
+          const res = await todolistsApi.getTodolists()
+          dispatch(setAppStatus({ status: "succeeded" }))
+          return { todolists: res.data }
+        } catch (error) {
+          handleServerNetworkError(error, dispatch)
+          return rejectWithValue(null)
+        }
+      }, {
+        fulfilled: (state, action) => {
+          return action.payload.todolists.map((tl) => ({ ...tl, filter: "all", entityStatus: "idle" }))
+        }
+      }),
       removeTodolist: create.reducer<{ id: string }>((state, action) => {
         const index = state.findIndex((tl) => tl.id === action.payload.id)
         if (index !== -1) {
@@ -68,32 +83,29 @@ export const todolistsSlice = createSliceWithThunks({
           state[index].entityStatus = action.payload.entityStatus
         }
       }),
-      setTodolists: create.reducer<{ todolists: Todolist[] }>((state, action) => {
-        return action.payload.todolists.map((tl) => ({ ...tl, filter: "all", entityStatus: "idle" }))
-      }),
       clearTodolists: create.reducer(() => {
         return []
-      }),
+      })
     }
   },
   selectors: {
-    selectTodolists: (state) => state,
-  },
+    selectTodolists: (state) => state
+  }
 })
 
 // Thunks
-export const fetchTodolistsTC = () => (dispatch: Dispatch) => {
-  dispatch(setAppStatus({ status: "loading" }))
-  todolistsApi
-    .getTodolists()
-    .then((res) => {
-      dispatch(setAppStatus({ status: "succeeded" }))
-      dispatch(setTodolists({ todolists: res.data }))
-    })
-    .catch((error) => {
-      handleServerNetworkError(error, dispatch)
-    })
-}
+// export const fetchTodolistsTC = () => (dispatch: Dispatch) => {
+//   dispatch(setAppStatus({ status: "loading" }))
+//   todolistsApi
+//     .getTodolists()
+//     .then((res) => {
+//       dispatch(setAppStatus({ status: "succeeded" }))
+//       dispatch(setTodolists({ todolists: res.data }))
+//     })
+//     .catch((error) => {
+//       handleServerNetworkError(error, dispatch)
+//     })
+// }
 
 export const removeTodolistTC = (id: string) => (dispatch: Dispatch) => {
   dispatch(setAppStatus({ status: "loading" }))
@@ -138,7 +150,7 @@ export const {
   changeTodolistFilter,
   changeTodolistTitle,
   clearTodolists,
-  setTodolists,
+  fetchTodolists
 } = todolistsSlice.actions
 export const { selectTodolists } = todolistsSlice.selectors
 export const todolistsReducer = todolistsSlice.reducer
